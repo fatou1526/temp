@@ -69,52 +69,33 @@ def _distance_to_holiday(holiday):
   return _distance_to_day
 
 
-EasterSunday = Holiday(
-    "Easter Sunday", month=1, day=1, offset=[Easter(), Day(0)]
-)
+from pandas.tseries.holiday import Holiday, DateOffset, Easter, MO, SU
+
+# Vacances pour Sierra Leone
+EasterSunday = Holiday("Easter Sunday", month=1, day=1, offset=[Easter(), DateOffset(weekday=SU(0))])
 NewYearsDay = Holiday("New Years Day", month=1, day=1)
-SuperBowl = Holiday(
-    "Superbowl", month=2, day=1, offset=DateOffset(weekday=SU(1))
-)
-MothersDay = Holiday(
-    "Mothers Day", month=5, day=1, offset=DateOffset(weekday=SU(2))
-)
-IndependenceDay = Holiday("Independence Day", month=7, day=4)
-ChristmasEve = Holiday("Christmas", month=12, day=24)
-ChristmasDay = Holiday("Christmas", month=12, day=25)
+IndependenceDay = Holiday("Independence Day", month=4, day=27)
+ChristmasEve = Holiday("Christmas Eve", month=12, day=24)
+ChristmasDay = Holiday("Christmas Day", month=12, day=25)
+BoxingDay = Holiday("Boxing Day", month=12, day=26)
 NewYearsEve = Holiday("New Years Eve", month=12, day=31)
-BlackFriday = Holiday(
-    "Black Friday",
-    month=11,
-    day=1,
-    offset=[pd.DateOffset(weekday=TH(4)), Day(1)],
-)
-CyberMonday = Holiday(
-    "Cyber Monday",
-    month=11,
-    day=1,
-    offset=[pd.DateOffset(weekday=TH(4)), Day(4)],
-)
+
+# Ajout d'autres vacances
+ArmedForcesDay = Holiday("Armed Forces Day", month=2, day=18)
+LabourDay = Holiday("Labour Day", month=5, day=1)
+#MuslimFestival = Holiday("Muslim Festival", month=varies, day=varies)  Remplacez les valeurs par les dates réelles
+#IslamicNewYear = Holiday("Islamic New Year", month=varies, day=varies)  Remplacez les valeurs par les dates réelles
 
 HOLIDAYS = [
-    EasterMonday,
-    GoodFriday,
-    USColumbusDay,
-    USLaborDay,
-    USMartinLutherKingJr,
-    USMemorialDay,
-    USPresidentsDay,
-    USThanksgivingDay,
     EasterSunday,
     NewYearsDay,
-    SuperBowl,
-    MothersDay,
     IndependenceDay,
     ChristmasEve,
     ChristmasDay,
     NewYearsEve,
-    BlackFriday,
-    CyberMonday,
+    BoxingDay,
+    ArmedForcesDay,
+    LabourDay
 ]
 
 
@@ -141,6 +122,7 @@ class TimeCovariates(object):
     self.dti = datetimes
     self.holiday = holiday
 
+  """
   def _minute_of_hour(self):
     minutes = np.array(self.dti.minute, dtype=np.float32)
     if self.normalized:
@@ -152,7 +134,7 @@ class TimeCovariates(object):
     if self.normalized:
       hours = hours / 23.0 - 0.5
     return hours
-
+  """
   def _day_of_week(self):
     day_week = np.array(self.dti.dayofweek, dtype=np.float32)
     if self.normalized:
@@ -195,8 +177,8 @@ class TimeCovariates(object):
 
   def get_covariates(self):
     """Get all time covariates."""
-    moh = self._minute_of_hour().reshape(1, -1)
-    hod = self._hour_of_day().reshape(1, -1)
+    #moh = self._minute_of_hour().reshape(1, -1)
+    #hod = self._hour_of_day().reshape(1, -1)
     dom = self._day_of_month().reshape(1, -1)
     dow = self._day_of_week().reshape(1, -1)
     doy = self._day_of_year().reshape(1, -1)
@@ -204,15 +186,13 @@ class TimeCovariates(object):
     woy = self._week_of_year().reshape(1, -1)
 
     all_covs = [
-        moh,
-        hod,
         dom,
         dow,
         doy,
         moy,
         woy,
     ]
-    columns = ["moh", "hod", "dom", "dow", "doy", "moy", "woy"]
+    columns = ["dom", "dow", "doy", "moy", "woy"]
     if self.holiday:
       hol_covs = self._get_holidays()
       all_covs.append(hol_covs)
